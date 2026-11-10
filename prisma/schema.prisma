@@ -1,0 +1,487 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Gender {
+  MEN
+  WOMEN
+}
+
+enum ProductModel {
+  OXFORD
+  DERBY
+  LOAFER
+  MONK_STRAP
+  BOOT
+  MARY_JANE
+  PUMP
+  BALLET_FLAT
+  SLINGBACK
+}
+
+enum Currency {
+  USD
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  UNPAID
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
+
+enum PersonalisationType {
+  INITIALS
+  DATE
+  CUSTOM_TEXT
+}
+
+enum PersonalisationStatus {
+  REQUESTED
+  APPROVED
+  IN_PROGRESS
+  COMPLETED
+  REJECTED
+}
+
+enum UserRole {
+  CUSTOMER
+  ADMIN
+  MANAGER
+}
+
+model User {
+  id                      String                   @id @default(cuid())
+  firstName               String
+  lastName                String
+  email                   String                   @unique
+  passwordHash            String
+  role                    UserRole                 @default(CUSTOMER)
+  createdAt               DateTime                 @default(now())
+  updatedAt               DateTime                 @updatedAt
+  addresses               Address[]
+  favorites               Favorite[]
+  cart                    Cart?
+  orders                  Order[]
+  personalisationRequests PersonalisationRequest[]
+}
+
+model Address {
+  id           String   @id @default(cuid())
+  userId       String
+  firstName    String
+  lastName     String
+  country      String
+  city         String
+  addressLine1 String
+  addressLine2 String?
+  postalCode   String
+  phone        String
+  isDefault    Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  orders       Order[]
+
+  @@index([userId])
+}
+
+model Category {
+  id               String       @id @default(cuid())
+  name             String
+  slug             String       @unique
+  model            ProductModel @unique
+  seoTitle         String?
+  seoDescription   String?
+  seoHeading       String?
+  intro            String?
+  editorialContent String?
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+  products         Product[]
+}
+
+model Product {
+  id                      String                   @id @default(cuid())
+  name                    String
+  slug                    String                   @unique
+  description             String
+  seoTitle                String?
+  seoDescription          String?
+  price                   Decimal                  @db.Decimal(10, 2)
+  currency                Currency                 @default(USD)
+  gender                  Gender
+  model                   ProductModel
+  categoryId              String
+  isActive                Boolean                  @default(true)
+  isNew                   Boolean                  @default(false)
+  isBestSeller            Boolean                  @default(false)
+  isFeatured              Boolean                  @default(false)
+  createdAt               DateTime                 @default(now())
+  updatedAt               DateTime                 @updatedAt
+  category                Category                 @relation(fields: [categoryId], references: [id])
+  images                  ProductImage[]
+  colors                  ProductColor[]
+  sizes                   ProductSize[]
+  variants                ProductVariant[]
+  favorites               Favorite[]
+  orderItems              OrderItem[]
+  personalisationRequests PersonalisationRequest[]
+
+  @@index([gender])
+  @@index([model])
+  @@index([isActive])
+  @@index([isFeatured])
+  @@index([createdAt])
+  @@index([categoryId])
+}
+
+model ProductImage {
+  id        String   @id @default(cuid())
+  productId String
+  url       String
+  alt       String
+  position  Int      @default(0)
+  createdAt DateTime @default(now())
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId, position])
+}
+
+model ProductColor {
+  id        String           @id @default(cuid())
+  productId String
+  name      String
+  hex       String
+  createdAt DateTime         @default(now())
+  product   Product          @relation(fields: [productId], references: [id], onDelete: Cascade)
+  variants  ProductVariant[]
+
+  @@index([productId])
+}
+
+model ProductSize {
+  id        String   @id @default(cuid())
+  productId String
+  size      Int
+  available Boolean  @default(true)
+  createdAt DateTime @default(now())
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, size])
+  @@index([productId])
+}
+
+model ProductVariant {
+  id                      String                   @id @default(cuid())
+  productId               String
+  colorId                 String
+  size                    Int
+  sku                     String                   @unique
+  stock                   Int                      @default(0)
+  priceOverride           Decimal?                 @db.Decimal(10, 2)
+  isActive                Boolean                  @default(true)
+  createdAt               DateTime                 @default(now())
+  updatedAt               DateTime                 @updatedAt
+  product                 Product                  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  color                   ProductColor             @relation(fields: [colorId], references: [id], onDelete: Cascade)
+  cartItems               CartItem[]
+  orderItems              OrderItem[]
+  personalisationRequests PersonalisationRequest[]
+
+  @@unique([productId, colorId, size])
+  @@index([productId])
+  @@index([colorId])
+  @@index([isActive])
+}
+
+model Favorite {
+  id        String   @id @default(cuid())
+  userId    String
+  productId String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
+  @@index([userId])
+  @@index([productId])
+}
+
+model Cart {
+  id        String     @id @default(cuid())
+  userId    String     @unique
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items     CartItem[]
+}
+
+model CartItem {
+  id        String         @id @default(cuid())
+  cartId    String
+  variantId String
+  quantity  Int
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+  cart      Cart           @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  variant   ProductVariant @relation(fields: [variantId], references: [id], onDelete: Restrict)
+
+  @@unique([cartId, variantId])
+  @@index([cartId])
+  @@index([variantId])
+}
+
+model Order {
+  id                         String        @id @default(cuid())
+  orderNumber                String        @unique
+  userId                     String?
+  guestEmail                 String?
+  customerEmail              String
+  customerFirstName          String
+  customerLastName           String
+  customerPhone              String
+  clientRequestId            String?       @unique
+  confirmationTokenHash      String?       @unique
+  confirmationTokenExpiresAt DateTime?
+  status                     OrderStatus   @default(PENDING)
+  paymentStatus              PaymentStatus @default(UNPAID)
+  subtotal                   Decimal       @db.Decimal(10, 2)
+  shippingCost               Decimal       @db.Decimal(10, 2)
+  total                      Decimal       @db.Decimal(10, 2)
+  currency                   Currency      @default(USD)
+  shippingAddressId          String?
+  shippingFirstName          String
+  shippingLastName           String
+  shippingCountry            String
+  shippingCity               String
+  shippingAddressLine1       String
+  shippingAddressLine2       String
+  shippingPostalCode         String
+  shippingPhone              String
+  shippingCountryCode        String
+  shippingCountryName        String
+  shippingMethodName         String
+  shippingEstimatedMinDays   Int
+  shippingEstimatedMaxDays   Int
+  trackingNumber             String?
+  trackingUrl                String?
+  carrier                    String?
+  createdAt                  DateTime      @default(now())
+  updatedAt                  DateTime      @updatedAt
+  user                       User?         @relation(fields: [userId], references: [id], onDelete: Restrict)
+  shippingAddress            Address?      @relation(fields: [shippingAddressId], references: [id], onDelete: Restrict)
+  items                      OrderItem[]
+
+  @@index([userId])
+  @@index([customerEmail])
+  @@index([status, createdAt])
+  @@index([paymentStatus])
+  @@index([confirmationTokenExpiresAt])
+  @@index([trackingNumber])
+  @@index([createdAt])
+}
+
+model OrderItem {
+  id                   String               @id @default(cuid())
+  orderId              String
+  productId            String
+  variantId            String
+  productName          String
+  sku                  String?
+  colorName            String
+  size                 Int
+  quantity             Int
+  unitPrice            Decimal              @db.Decimal(10, 2)
+  totalPrice           Decimal              @db.Decimal(10, 2)
+  personalisationType  PersonalisationType?
+  personalisationValue String?
+  personalisationNotes String?
+  createdAt            DateTime             @default(now())
+  order                Order                @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product              Product              @relation(fields: [productId], references: [id], onDelete: Restrict)
+  variant              ProductVariant       @relation(fields: [variantId], references: [id], onDelete: Restrict)
+
+  @@index([orderId])
+  @@index([productId])
+  @@index([variantId])
+}
+
+model PersonalisationRequest {
+  id        String                @id @default(cuid())
+  userId    String
+  productId String
+  variantId String?
+  type      PersonalisationType
+  value     String
+  notes     String?
+  status    PersonalisationStatus @default(REQUESTED)
+  createdAt DateTime              @default(now())
+  updatedAt DateTime              @updatedAt
+  user      User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product   Product               @relation(fields: [productId], references: [id], onDelete: Restrict)
+  variant   ProductVariant?       @relation(fields: [variantId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([productId])
+  @@index([status])
+}
+
+model ShippingCountry {
+  id               String   @id @default(cuid())
+  code             String   @unique
+  name             String
+  isActive         Boolean  @default(true)
+  estimatedMinDays Int
+  estimatedMaxDays Int
+  shippingPrice    Decimal  @default(0) @db.Decimal(10, 2)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([isActive])
+}
+
+model HomeCollection {
+  id           String                      @id @default(cuid())
+  slug         String                      @unique
+  href         String
+  image        String
+  position     Int                         @default(0)
+  isActive     Boolean                     @default(true)
+  createdAt    DateTime                    @default(now())
+  updatedAt    DateTime                    @updatedAt
+  translations HomeCollectionTranslation[]
+
+  @@index([isActive, position])
+}
+
+model HomeCollectionTranslation {
+  id           String         @id @default(cuid())
+  collectionId String
+  locale       String
+  title        String
+  description  String
+  imageAlt     String
+  collection   HomeCollection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+
+  @@unique([collectionId, locale])
+  @@index([locale])
+}
+
+model NavigationItem {
+  id           String                      @id @default(cuid())
+  key          String                      @unique
+  href         String
+  image        String?
+  position     Int                         @default(0)
+  isActive     Boolean                     @default(true)
+  createdAt    DateTime                    @default(now())
+  updatedAt    DateTime                    @updatedAt
+  translations NavigationItemTranslation[]
+  groups       NavigationGroup[]
+
+  @@index([isActive, position])
+}
+
+model NavigationItemTranslation {
+  id       String         @id @default(cuid())
+  itemId   String
+  locale   String
+  label    String
+  imageAlt String?
+  item     NavigationItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  @@unique([itemId, locale])
+  @@index([locale])
+}
+
+model NavigationGroup {
+  id           String                       @id @default(cuid())
+  itemId       String
+  key          String
+  position     Int                          @default(0)
+  item         NavigationItem               @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  translations NavigationGroupTranslation[]
+  links        NavigationLink[]
+
+  @@unique([itemId, key])
+  @@index([itemId, position])
+}
+
+model NavigationGroupTranslation {
+  id      String          @id @default(cuid())
+  groupId String
+  locale  String
+  title   String
+  group   NavigationGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, locale])
+  @@index([locale])
+}
+
+model NavigationLink {
+  id           String                      @id @default(cuid())
+  groupId      String
+  href         String
+  position     Int                         @default(0)
+  group        NavigationGroup             @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  translations NavigationLinkTranslation[]
+
+  @@unique([groupId, href])
+  @@index([groupId, position])
+}
+
+model NavigationLinkTranslation {
+  id     String         @id @default(cuid())
+  linkId String
+  locale String
+  label  String
+  link   NavigationLink @relation(fields: [linkId], references: [id], onDelete: Cascade)
+
+  @@unique([linkId, locale])
+  @@index([locale])
+}
+
+model CmsSection {
+  id           String                  @id @default(cuid())
+  key          String                  @unique
+  page         String
+  imageUrl     String?
+  position     Int                     @default(0)
+  isActive     Boolean                 @default(true)
+  createdAt    DateTime                @default(now())
+  updatedAt    DateTime                @updatedAt
+  translations CmsSectionTranslation[]
+
+  @@index([page, isActive, position])
+}
+
+model CmsSectionTranslation {
+  id        String     @id @default(cuid())
+  sectionId String
+  locale    String
+  eyebrow   String?
+  title     String?
+  text      String?
+  imageAlt  String?
+  ctaLabel  String?
+  section   CmsSection @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+
+  @@unique([sectionId, locale])
+  @@index([locale])
+}

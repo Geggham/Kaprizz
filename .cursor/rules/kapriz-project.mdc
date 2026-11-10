@@ -1,0 +1,61 @@
+---
+description: Kapriz production rules — SEO, RSC, TypeScript, commerce safety
+alwaysApply: true
+---
+
+# Kapriz Project Rules
+
+E-commerce for classic shoes. Production standards — follow on every change.
+
+## SEO & indexing
+
+1. Do not break SEO when adding pages (canonicals, titles, descriptions, internal links, crawl paths).
+2. Product and category pages must be indexable (`robots` allow indexing; no accidental `noindex`).
+3. Every product must have correct `metadata` (title, description, Open Graph as needed).
+4. Add Product JSON-LD on product pages.
+5. Product content must be present in the HTML (no client-only fetch for primary product data).
+
+## Architecture
+
+6. Always use TypeScript. Never use `any`.
+7. Server Components by default.
+8. Client Components only when required (interactivity, browser APIs, client-only libs).
+9. Prefer semantic HTML (`main`, `nav`, `article`, `section`, `h1`–`h6`, lists, etc.).
+10. Do not add extra npm packages unless explicitly requested or clearly necessary.
+
+## i18n
+
+15. Supported locales: `en` (English), `ru` (Russian), `hy` (Armenian). Default: `en`.
+16. Never hardcode user-facing copy in components/pages. Always use `t("key")`.
+17. Server Components: `const { t } = await getTranslator()`.
+18. Client Components: `const { t } = useTranslate()`.
+19. Add every new string to all locale bundles (`locales/en.ts`, `locales/ru.ts`, `locales/hy.ts`).
+20. Keep keys stable; backend can later replace local bundles via `getMessageBundle`.
+
+## Color scheme
+
+Use only the brand palette (tokens in `app/globals.css`):
+
+| Token | Hex | Role |
+|---|---|---|
+| `ivory` | `#FAF8F4` | Primary page background |
+| `brown` | `#3A2418` | Primary brand color |
+| `leather` | `#7A4A2C` | Secondary / accent |
+| `sand` | `#E9E0D4` | Sections, borders, soft backgrounds |
+| `charcoal` | `#1F1F1F` | Primary text |
+| `gold` | `#B08D57` | Rare premium accents only |
+| `white` | `#FFFFFF` | Cards / clean areas |
+
+21. Prefer Tailwind brand tokens (`bg-ivory`, `text-charcoal`, `border-sand`, `bg-brown`, etc.).
+22. Do not invent new brand colors or default to purple/generic AI palettes.
+23. Use `gold` sparingly — never as a primary fill for large surfaces.
+
+## Performance & UX
+
+11. Watch Core Web Vitals (LCP, INP, CLS) — avoid heavy client JS, layout shift, unblock LCP.
+12. Optimize product images (`next/image`, sizing, priority only for LCP images).
+13. All pages must be responsive.
+
+## Security / commerce
+
+14. Never trust client data — price, stock, and permissions are validated on the server.

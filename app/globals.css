@@ -1,26 +1,256 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-open-sans), "Open Sans", ui-sans-serif, system-ui,
+    sans-serif;
+
+  --color-ivory: #faf8f4;
+  --color-brown: #3a2418;
+  --color-leather: #7a4a2c;
+  --color-sand: #e9e0d4;
+  --color-charcoal: #1f1f1f;
+  --color-gold: #b08d57;
+  --color-white: #ffffff;
+
+  --color-background: var(--color-ivory);
+  --color-foreground: var(--color-charcoal);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  box-sizing: border-box;
+}
+
+html {
+  overflow-x: hidden;
+  scroll-behavior: smooth;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  margin: 0;
+  max-width: 100%;
+  overflow-x: hidden;
+  background: var(--color-background);
+  color: var(--color-foreground);
+  font-family: var(--font-sans);
+}
+
+button,
+summary,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+::selection {
+  background: var(--color-brown);
+  color: var(--color-white);
+}
+
+.footstep-transition {
+  position: absolute;
+  z-index: 30;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 240vh;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.footstep-transition__blocker {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  background: transparent;
+  touch-action: none;
+  cursor: default;
+}
+
+.footstep-transition__cover {
+  position: absolute;
+  inset: 0;
+  background: var(--color-white);
+}
+
+.footstep-transition__path {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: min(74vh, 660px);
+}
+
+.footstep-transition__step {
+  position: absolute;
+  left: 50%;
+  width: clamp(68px, 6vw, 88px);
+  height: auto;
+  opacity: 0;
+  filter: blur(2px);
+  transform: translate3d(
+      calc(-50% + var(--step-offset)),
+      -10px,
+      0
+    )
+    rotate(var(--step-rotation)) scale(0.8);
+  transform-origin: center;
+  will-change: transform, opacity, filter;
+  animation: footstep-appear 700ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+[data-footstep-transition="revealing"] [data-collections-heading] {
+  animation: collection-reveal 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+[data-footstep-transition="revealing"] [data-collection-card] {
+  animation: collection-reveal 420ms cubic-bezier(0.22, 1, 0.36, 1) 120ms both;
+}
+
+[data-footstep-transition="revealing"] [data-collection-card]:nth-child(2) {
+  animation-delay: 220ms;
+}
+
+[data-footstep-transition="revealing"] [data-collection-card]:nth-child(3) {
+  animation-delay: 320ms;
+}
+
+@keyframes footstep-appear {
+  0% {
+    opacity: 0;
+    filter: blur(2px);
+    transform: translate3d(
+        calc(-50% + var(--step-offset)),
+        -10px,
+        0
+      )
+      rotate(var(--step-rotation)) scale(0.8);
+  }
+
+  42%,
+  62% {
+    opacity: 0.92;
+    filter: blur(0);
+    transform: translate3d(calc(-50% + var(--step-offset)), 0, 0)
+      rotate(var(--step-rotation)) scale(1);
+  }
+
+  100% {
+    opacity: 0;
+    filter: blur(1px);
+    transform: translate3d(calc(-50% + var(--step-offset)), 6px, 0)
+      rotate(var(--step-rotation)) scale(1);
+  }
+}
+
+@keyframes collection-reveal {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 30px, 0);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@media (max-width: 767px) {
+  .footstep-transition__step {
+    width: 60px;
+    transform: translate3d(
+        calc(-50% + var(--step-mobile-offset)),
+        -8px,
+        0
+      )
+      rotate(var(--step-rotation)) scale(0.8);
+  }
+
+  @keyframes footstep-appear {
+    0% {
+      opacity: 0;
+      filter: blur(2px);
+      transform: translate3d(
+          calc(-50% + var(--step-mobile-offset)),
+          -8px,
+          0
+        )
+        rotate(var(--step-rotation)) scale(0.8);
+    }
+
+    42%,
+    62% {
+      opacity: 0.9;
+      filter: blur(0);
+      transform: translate3d(
+          calc(-50% + var(--step-mobile-offset)),
+          0,
+          0
+        )
+        rotate(var(--step-rotation)) scale(1);
+    }
+
+    100% {
+      opacity: 0;
+      filter: blur(1px);
+      transform: translate3d(
+          calc(-50% + var(--step-mobile-offset)),
+          5px,
+          0
+        )
+        rotate(var(--step-rotation)) scale(1);
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .footstep-transition,
+  .footstep-transition__cover,
+  .footstep-transition__step {
+    display: none;
+    animation: none;
+  }
+
+  [data-footstep-transition] [data-collections-heading],
+  [data-footstep-transition] [data-collection-card] {
+    animation: none;
+  }
+
+  .about-reveal {
+    animation: none;
+  }
+}
+
+@keyframes about-reveal {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 20px, 0);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.about-reveal {
+  animation: about-reveal 700ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.about-reveal:nth-of-type(2) {
+  animation-delay: 40ms;
+}
+
+.about-reveal:nth-of-type(3) {
+  animation-delay: 80ms;
+}
+
+.about-section-video-lightbox:fullscreen,
+.about-section-video-lightbox:-webkit-full-screen {
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  background: #1f1f1f;
+  transform: none;
 }

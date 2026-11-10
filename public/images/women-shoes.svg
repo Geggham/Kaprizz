@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" role="img" aria-labelledby="title desc">
+  <title id="title">5=A:0O :;0AA8G5A:0O >1C2L</title>
+  <desc id="desc">-;530=B=0O 1>@4>20O BCD;O =0 :@5<>2>< D>=5</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#eee5da"/>
+      <stop offset="1" stop-color="#cbb5a5"/>
+    </linearGradient>
+    <linearGradient id="shoe" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#7e2937"/>
+      <stop offset=".62" stop-color="#40141e"/>
+      <stop offset="1" stop-color="#260b11"/>
+    </linearGradient>
+  </defs>
+  <rect width="1000" height="1000" fill="url(#bg)"/>
+  <circle cx="790" cy="190" r="260" fill="#fff" opacity=".25"/>
+  <ellipse cx="510" cy="760" rx="390" ry="48" fill="#49342e" opacity=".2"/>
+  <path d="M170 673c130-25 225-76 306-142 82-66 84-156 162-204 47-29 109-16 139 31 38 60 21 166 71 216 33 34 91 46 115 83 28 43-7 94-57 101-179 26-559 21-729-17-43-10-50-60-7-68Z" fill="url(#shoe)"/>
+  <path d="M469 536c89-76 94-178 177-207 61-22 116 25 133 85-104 87-189 124-310 122Z" fill="#5d1e2a"/>
+  <path d="M206 718c216 36 551 39 717 3" fill="none" stroke="#23090e" stroke-width="28" stroke-linecap="round"/>
+  <path d="M776 409c-79 68-152 99-255 106" fill="none" stroke="#ac6570" stroke-width="8" opacity=".8"/>
+</svg>
